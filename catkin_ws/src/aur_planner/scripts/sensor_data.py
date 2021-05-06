@@ -5,6 +5,15 @@ import rospy
 from sensor_msgs.msg import Illuminance
 from geometry_msgs.msg import Pose
 import numpy as np
+from enum import Enum
+
+
+class Method(Enum):
+    INV_EUC = 1
+    INTENSITY = 2
+
+
+method = Method.INTENSITY
 
 
 class Sources():
@@ -16,12 +25,24 @@ class Sources():
         eucli_dist = np.array([np.linalg.norm(dist) for dist in dist_array])
         print("euclidian distances: " + str(eucli_dist))
         # inverse it since it should be more present the closer it is
-        inverse_eucli_dist = 1.0/eucli_dist
-        print("inverse euclidian distances: " + str(inverse_eucli_dist))
-        # sum all the inversed euclidian distances 
-        sum_inverse_dist = np.sum(inverse_eucli_dist)
+        inverse_eucli_dist_array = 1.0/eucli_dist
+        print("inverse euclidian distances: " + str(inverse_eucli_dist_array))
+        # sum all the inversed euclidian distances
+        sum_inverse_dist = np.sum(inverse_eucli_dist_array)
         print("summed inverse distance: " + str(sum_inverse_dist))
         return sum_inverse_dist
+
+    def light_intensity(self, dist_array):
+        # calculate euclidian distances for each source
+        eucli_dist = np.array([np.linalg.norm(dist) for dist in dist_array])
+        print("euclidian distances: " + str(eucli_dist))
+        # calculate intensity for each source
+        intensity_array = 1.0/np.square(eucli_dist)
+        print("intensities: " + str(intensity_array))
+        # sum each intensity
+        sum_intensity = np.sum(intensity_array)
+        print("summed intensities: " + str(sum_intensity))
+        return sum_intensity
 
     def get_relative_value(self, rob_pose):
         # does not take orientation into account
@@ -31,7 +52,14 @@ class Sources():
         print("Robot Position: \n" + str(rob_pos))
         dist_array = np.array([abs(rob_pos - pos) for pos in self._pos_array])
         print("distance to each source: \n" + str(dist_array))
-        value = self.inverse_euclidian_dist(dist_array)
+
+        if method == Method.INV_EUC:
+            value = self.inverse_euclidian_dist(dist_array)
+        elif method == Method.INTENSITY:
+            value = self.light_intensity(dist_array)
+        else:
+            value = self.inverse_euclidian_dist(dist_array)
+
         print("\n")
 
         return value
