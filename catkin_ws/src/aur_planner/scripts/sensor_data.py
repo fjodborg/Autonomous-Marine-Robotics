@@ -4,6 +4,7 @@ import rospy
 # from std_msgs.msg import String
 from sensor_msgs.msg import Illuminance
 from geometry_msgs.msg import Pose
+from nav_msgs.msg import Odometry
 import numpy as np
 from enum import Enum
 
@@ -48,7 +49,8 @@ class Sources():
         # does not take orientation into account
         # TODO take orientation into account
         print("Source positions: \n" + str(self._pos_array))
-        rob_pos = np.array([rob_pose.position.x, rob_pose.position.y, rob_pose.position.z])
+        rob_pos = np.array(
+            [rob_pose.position.x, rob_pose.position.y, rob_pose.position.z])
         print("Robot Position: \n" + str(rob_pos))
         dist_array = np.array([abs(rob_pos - pos) for pos in self._pos_array])
         print("distance to each source: \n" + str(dist_array))
@@ -68,42 +70,54 @@ class Sources():
 class Sub():
     def __init__(self, sources):
         self.sources = sources  # gain access to source class
+        self.simulation_flag = True
         self.listener()
         self.pose = None
 
         # initialize publisher
-        self.pub = rospy.Publisher('sensor', Illuminance, queue_size=10)
+        self.pub = rospy.Publisher(
+            'bluerov2/our_sensor', Illuminance, queue_size=10)
 
         # initialize sensor type
         self.sensor = Illuminance()
 
     def listener(self):
         # initialize subscriber
-        rospy.Subscriber("pose", Pose, self.callback)
+        # In simulations, the pose has a ground truth
+        if (self.simulation_flag):
+            rospy.Subscriber("/bluerov2/pose_gt", Odometry,
+                             self.callback_simulation)
 
-    def callback(self, pose):
+    def callback_simulation(self, odom):
         # Do this when something is published to intilized topic
-        self.pose = pose
+        self.odom = odom
+        self.pose = self.odom.pose.pose  # Extract what we need
         # rospy.loginfo(rospy.get_caller_id() + "I heard %s", pose.position)
+
+    def publish_readings(self):
         # retrieve artifical value
-        self.sensor.illuminance = self.sources.get_relative_value(pose)
+        if self.pose == None:
+            return
+        self.sensor.illuminance = self.sources.get_relative_value(self.pose)
         # publish the sensor msg
         self.pub.publish(self.sensor)
 
 
 def main_loop():
-    rate = rospy.Rate(10)
+    sources = Sources([[0, 2, 3], [3, 4, 5]])
+    sub = Sub(sources)
+    rate = rospy.Rate(0.1)
     while not rospy.is_shutdown():
         # sensor.illuminance += 0.1
         # rospy.loginfo(sensor.illuminance)
+        sub.publish_readings()
         rate.sleep()
 
 
 if __name__ == '__main__':
     rospy.init_node('node_name', anonymous=True)
     # init sources
-    sources = Sources([[0, 2, 3], [3, 4, 5]])
-    sub = Sub(sources)
+
     main_loop()
 
     # spin() simply keeps python from exiting until this node is stopped
