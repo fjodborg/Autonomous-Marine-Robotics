@@ -106,6 +106,5 @@ if __name__ == '__main__':
     sub = Sub(sources)
     main_loop()
 
-
     # spin() simply keeps python from exiting until this node is stopped
     rospy.spin()
