@@ -4,8 +4,11 @@ import rospy
 from geometry_msgs.msg import Pose, Point
 from nav_msgs.msg import Odometry
 
+nsecs = 0
+secs = 0
 
 def main_loop():
+    global nsecs, secs
     rate = rospy.Rate(10)
     pos_array = []
     x_range = 20
@@ -26,6 +29,12 @@ def main_loop():
             break
         
         odom.pose.pose.position = Point(*pos)
+        nsecs += 1e8
+        if nsecs == 1e9:
+            secs += 1
+            nsecs = 0
+        odom.header.stamp.nsecs = nsecs
+        odom.header.stamp.secs = secs
         print(odom.pose.pose)
 
         pub.publish(odom)
