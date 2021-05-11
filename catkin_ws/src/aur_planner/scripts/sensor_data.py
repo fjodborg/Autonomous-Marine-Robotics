@@ -28,7 +28,7 @@ class Log():
         name = "poses"
         self.filepath = os.path.join(dir_path, "..", "logs", name + ".txt")
         f = open(self.filepath, "a")
-        f.write("Time, Sensor_reading, x, y, z" + "\n")
+        f.write("# Time, Sensor_reading, x, y, z" + "\n")
         f.close()
 
     def write_file(self):
