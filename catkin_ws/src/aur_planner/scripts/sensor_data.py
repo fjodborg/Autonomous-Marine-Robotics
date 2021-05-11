@@ -7,7 +7,10 @@ from geometry_msgs.msg import Pose
 from nav_msgs.msg import Odometry
 import numpy as np
 from enum import Enum
+import os
 
+dir_path = os.path.dirname(os.path.realpath(__file__))
+buffer_size = 3
 
 class Method(Enum):
     INV_EUC = 1
@@ -17,9 +20,46 @@ class Method(Enum):
 method = Method.INTENSITY
 
 
+class Log():
+    def __init__(self):
+        self.positions = []
+        self.sensor_readings = []
+        self.times = []
+        name = "poses"
+        self.filepath = os.path.join(dir_path, "..", "logs", name + ".txt")
+        f = open(self.filepath, "a")
+        f.write("Time, Sensor_reading, x, y, z" + "\n")
+        f.close()
+
+    def write_file(self):
+        # only converter from list of list to comma seperated and new line
+        f_string = '\n'.join(["{}, {}, {}".format(time, self.sensor_readings[i], ", ".join(str(pos) for pos in self.positions[i])) for i, time in enumerate(self.times)]) 
+
+        f = open(self.filepath, "a")
+        f.write(f_string + "\n")
+        f.close()
+    
+    def clean_up(self):
+        self.positions = []
+        self.sensor_readings = []
+        self.times = []
+
+    def add_data(self, secs, nsecs, pos, sensor_reading):
+        # print(pos)
+        # np.append(self.positions.xyzs, pos)
+        # np.append(self.positions.times, time)
+        time = float(secs + float(nsecs)*1e-9)
+        self.positions.append([pos.x, pos.y, pos.z])
+        self.sensor_readings.append(sensor_reading)
+        self.times.append(time)
+        if len(self.times) % buffer_size == 0:
+            self.write_file()
+            self.clean_up()
+
 class Sources():
+
     def __init__(self, pos_array):
-        self._pos_array = np.array(pos_array)
+        self._src_pos_array = np.array(pos_array)
 
     def inverse_euclidian_dist(self, dist_array):
         # calculate euclidian distances for each source
@@ -48,11 +88,11 @@ class Sources():
     def get_relative_value(self, rob_pose):
         # does not take orientation into account
         # TODO take orientation into account
-        print("Source positions: \n" + str(self._pos_array))
+        print("Source positions: \n" + str(self._src_pos_array))
         rob_pos = np.array(
             [rob_pose.position.x, rob_pose.position.y, rob_pose.position.z])
         print("Robot Position: \n" + str(rob_pos))
-        dist_array = np.array([abs(rob_pos - pos) for pos in self._pos_array])
+        dist_array = np.array([abs(rob_pos - pos) for pos in self._src_pos_array])
         print("distance to each source: \n" + str(dist_array))
 
         if method == Method.INV_EUC:
@@ -70,6 +110,7 @@ class Sources():
 class Sub():
     def __init__(self, sources):
         self.sources = sources  # gain access to source class
+        self.log = Log()
         self.simulation_flag = True
         self.listener()
         self.pose = None
@@ -98,7 +139,12 @@ class Sub():
         # retrieve artifical value
         if self.pose == None:
             return
+
         self.sensor.illuminance = self.sources.get_relative_value(self.pose)
+        secs = self.odom.header.stamp.secs
+        nsecs = self.odom.header.stamp.nsecs
+        self.log.add_data(secs, nsecs, self.pose.position, self.sensor.illuminance)
+
         # publish the sensor msg
         self.pub.publish(self.sensor)
 
