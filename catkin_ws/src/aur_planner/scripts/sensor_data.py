@@ -104,9 +104,9 @@ class Sub():
 
 
 def main_loop():
-    sources = Sources([[0, 2, 3], [3, 4, 5]])
+    sources = Sources([[5, 2, 2]])
     sub = Sub(sources)
-    rate = rospy.Rate(0.1)
+    rate = rospy.Rate(1)
     while not rospy.is_shutdown():
         # sensor.illuminance += 0.1
         # rospy.loginfo(sensor.illuminance)
