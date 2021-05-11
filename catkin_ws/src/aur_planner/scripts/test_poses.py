@@ -2,6 +2,7 @@
 # license removed for brevity
 import rospy
 from geometry_msgs.msg import Pose, Point
+from nav_msgs.msg import Odometry
 
 
 def main_loop():
@@ -15,19 +16,19 @@ def main_loop():
                 y = y_range - y - 1
             print(x, y)
             pos_array.append([x, y, 0])  # pos(ition)s
-    pose = Pose()
+    odom = Odometry()
 
     # initialize publisher
-    pub = rospy.Publisher('pose', Pose, queue_size=10)
+    pub = rospy.Publisher('bluerov2/pose_gt', Odometry, queue_size=10)
 
     for pos in pos_array:
         if rospy.is_shutdown():
             break
+        
+        odom.pose.pose.position = Point(*pos)
+        print(odom.pose.pose)
 
-        pose.position = Point(*pos)
-        print(pose)
-
-        pub.publish(pose)
+        pub.publish(odom)
 
         rate.sleep()
 
