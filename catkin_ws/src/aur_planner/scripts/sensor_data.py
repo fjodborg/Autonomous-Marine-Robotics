@@ -150,7 +150,7 @@ class Sub():
 
 
 def main_loop():
-    sources = Sources([[5, 2, 2]])
+    sources = Sources([[5, 2, 2], [7.5, 7.5, 2]])
     sub = Sub(sources)
     rate = rospy.Rate(1)
     while not rospy.is_shutdown():

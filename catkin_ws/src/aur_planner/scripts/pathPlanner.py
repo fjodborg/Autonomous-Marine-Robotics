@@ -21,21 +21,47 @@ class pathPlanner():
 
         # Init Output Waypoint
         self.Waypoint = wg[:, 0]
+        # Init return waypoint
+        self.return_to_lstart_waypoint = wg[:, 0]
+        # Init memory
+        self.pos_visit = []
+
+        self.delta_north, self.delta_east = (max(
+            self.wl[0, :])-min(self.wl[0, :]))/2.0, (max(self.wl[1, :])-min(self.wl[1, :]))/2.0
+        print(self.delta_north, self.delta_east)
 
         # Init Internal variables
         self.index_g, self.index_l, self.x_0, self.g_l_flag = 0, 0, 0.0, 0
+        self.return_to_lstart_flag = False  # Anders and I do flags differently -A
 
     def stateMachine(self, pos, meas):
         self.updateVariables(pos)
         self.Waypoint = wg[:, self.index_g]
-        print("Global index: %d, Local: %d, Local_flag %d" %
-              (self.index_g, self.index_l, self.g_l_flag))
+        print("Global index: %d, Local: %d, Local_flag %d, Return flag %d" %
+              (self.index_g, self.index_l, self.g_l_flag, self.return_to_lstart_flag))
+
+        # TODO: Implement
+        if (self.return_to_lstart_flag):
+            circ = (self.return_to_lstart_waypoint[0]-pos[0])**2 + (
+                self.return_to_lstart_waypoint[1]-pos[1])**2
+            if circ <= self.circ_acc_l**2:
+                self.return_to_lstart_flag = False
+            return self.return_to_lstart_waypoint
 
         if (meas >= self.meas_thres and self.g_l_flag == 0):
             self.g_l_flag = 1
-            self.x_0 = pos
+            self.x_0 = np.subtract(pos, np.array(
+                [self.delta_north, self.delta_east]))
+            self.return_to_lstart_waypoint = pos
+
+            for n in range(len(self.pos_visit)):
+                circ_visit = (
+                    self.pos_visit[n][0]-pos[0])**2+(self.pos_visit[n][1]-pos[1])**2
+                if (circ_visit <= np.linalg.norm(np.array([self.delta_north, self.delta_east]))**2):
+                    self.g_l_flag = 0
 
         if self.g_l_flag == 1:
+            self.pos_visit.append(pos)
             self.Waypoint = wl[:, self.index_l]+self.x_0.T
 
             circ = (wl[0, self.index_l]-pos[0]+self.x_0[0])**2 + \
@@ -56,6 +82,7 @@ class pathPlanner():
             self.index_g = 0
         if self.index_l >= self.nl:
             self.index_l, self.g_l_flag = 0, 0
+            self.return_to_lstart_flag = True  # Return to start of local path
 
     def show_param(self):
         print(vars(self))  # Show all attributes with values
@@ -85,7 +112,7 @@ class Subscriber():
                              self.pose_callback_simulation)
 
     def pose_callback_simulation(self, odom):
-        # Do this when something is published to intilized topic
+        # Should always save the position to self.pose
         self.odom = odom
         self.pose = self.odom.pose.pose  # Extract what we need
         self.pos = np.array(
@@ -114,7 +141,7 @@ if __name__ == "__main__":
     rospy.init_node('our_path_planner', anonymous=True)
 
     ng = 6  # Points in the global plan
-    nl = 4  # Points in the local plan
+    nl = 10  # Points in the local plan
     MD = missionDesigner(northg=10.0, eastg=15.0, ng=ng, northl=1.5,
                          eastl=1.5, nl=nl, northg0=0.0, eastg0=0.0)
     wg, wl = MD.return_waypoints()
@@ -123,17 +150,9 @@ if __name__ == "__main__":
 
     Sub = Subscriber(pp)
 
-    rate = rospy.Rate(10)
-    while not rospy.is_shutdown():
-        # sensor.illuminance += 0.1
-        # rospy.loginfo(sensor.illuminance)
-        rate.sleep()
-
-    # x = np.array([[1.5,1]]).T
-    # print(pp.stateMachine(x, 4))
-    # meas = 5
-
-    # print(pp.stateMachine(x, meas))
-    # print(pp.stateMachine(x, meas))
-    # print(pp.stateMachine(x, meas))
+    # rate = rospy.Rate(10)
+    # while not rospy.is_shutdown():
+    #     # sensor.illuminance += 0.1
+    #     # rospy.loginfo(sensor.illuminance)
+    #     rate.sleep()
     rospy.spin()
