@@ -72,6 +72,7 @@ class Subscriber():
         self.WP = Waypoint()
         self.WP.max_forward_speed = self.max_speed
         self.WP.radius_of_acceptance = 0.5  # [m]
+        self.oldWP = None
 
         rospy.wait_for_service('/bluerov2/go_to')
         self.goto_srv = rospy.ServiceProxy('/bluerov2/go_to', GoTo)
@@ -99,7 +100,12 @@ class Subscriber():
         print(WP_simple)
         self.WP.point.x = WP_simple[0]
         self.WP.point.y = WP_simple[1]
-        srv_return = self.goto_srv(self.WP, self.max_speed, self.interpolator)
+
+        srv_return = False
+        if (WP_simple != self.oldWP).any():
+            srv_return = self.goto_srv(
+                self.WP, self.max_speed, self.interpolator)
+            self.oldWP = WP_simple
         print(srv_return)
 
 
@@ -107,13 +113,13 @@ if __name__ == "__main__":
 
     rospy.init_node('our_path_planner', anonymous=True)
 
-    ng = 4  # Points in the global plan
+    ng = 6  # Points in the global plan
     nl = 4  # Points in the local plan
-    MD = missionDesigner(northg=10.0, eastg=10.0, ng=ng, northl=1.5,
+    MD = missionDesigner(northg=10.0, eastg=15.0, ng=ng, northl=1.5,
                          eastl=1.5, nl=nl, northg0=0.0, eastg0=0.0)
     wg, wl = MD.return_waypoints()
-    pp = pathPlanner(meas_thres=0.1, wg=wg, wl=wl, circ_acc=0.2,
-                     circ_acc_l=0.1, ng=ng, nl=nl)
+    pp = pathPlanner(meas_thres=0.1, wg=wg, wl=wl, circ_acc=0.4,
+                     circ_acc_l=0.15, ng=ng, nl=nl)
 
     Sub = Subscriber(pp)
 
