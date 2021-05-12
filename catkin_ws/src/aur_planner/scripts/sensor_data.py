@@ -3,7 +3,7 @@
 import rospy
 # from std_msgs.msg import String
 from sensor_msgs.msg import Illuminance
-from geometry_msgs.msg import Pose
+from geometry_msgs.msg import Pose, PoseWithCovarianceStamped
 from nav_msgs.msg import Odometry
 import numpy as np
 from enum import Enum
@@ -11,6 +11,7 @@ import os
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 buffer_size = 3
+
 
 class Method(Enum):
     INV_EUC = 1
@@ -33,12 +34,13 @@ class Log():
 
     def write_file(self):
         # only converter from list of list to comma seperated and new line
-        f_string = '\n'.join(["{}, {}, {}".format(time, self.sensor_readings[i], ", ".join(str(pos) for pos in self.positions[i])) for i, time in enumerate(self.times)]) 
+        f_string = '\n'.join(["{}, {}, {}".format(time, self.sensor_readings[i], ", ".join(
+            str(pos) for pos in self.positions[i])) for i, time in enumerate(self.times)])
 
         f = open(self.filepath, "a")
         f.write(f_string + "\n")
         f.close()
-    
+
     def clean_up(self):
         self.positions = []
         self.sensor_readings = []
@@ -55,6 +57,7 @@ class Log():
         if len(self.times) % buffer_size == 0:
             self.write_file()
             self.clean_up()
+
 
 class Sources():
 
@@ -92,7 +95,8 @@ class Sources():
         rob_pos = np.array(
             [rob_pose.position.x, rob_pose.position.y, rob_pose.position.z])
         print("Robot Position: \n" + str(rob_pos))
-        dist_array = np.array([abs(rob_pos - pos) for pos in self._src_pos_array])
+        dist_array = np.array([abs(rob_pos - pos)
+                              for pos in self._src_pos_array])
         print("distance to each source: \n" + str(dist_array))
 
         if method == Method.INV_EUC:
@@ -111,7 +115,7 @@ class Sub():
     def __init__(self, sources):
         self.sources = sources  # gain access to source class
         self.log = Log()
-        self.simulation_flag = True
+        self.simulation_flag = False
         self.listener()
         self.pose = None
 
@@ -128,12 +132,21 @@ class Sub():
         if (self.simulation_flag):
             rospy.Subscriber("/bluerov2/pose_gt", Odometry,
                              self.callback_simulation)
+        else:
+            #            rospy.Subscriber("/bluerov2/odometry/filtered",
+            #                             Odometry, self.callback_simulation)
+            rospy.Subscriber("/bluerov2/waterlinked/pose_with_cov_stamped",
+                             PoseWithCovarianceStamped, self.callback_posstamp)
 
     def callback_simulation(self, odom):
         # Do this when something is published to intilized topic
         self.odom = odom
         self.pose = self.odom.pose.pose  # Extract what we need
         # rospy.loginfo(rospy.get_caller_id() + "I heard %s", pose.position)
+
+    def callback_posstamp(self, posstamp):
+        self.odom = posstamp
+        self.pose = posstamp.pose.pose
 
     def publish_readings(self):
         # retrieve artifical value
@@ -143,15 +156,18 @@ class Sub():
         self.sensor.illuminance = self.sources.get_relative_value(self.pose)
         secs = self.odom.header.stamp.secs
         nsecs = self.odom.header.stamp.nsecs
-        self.log.add_data(secs, nsecs, self.pose.position, self.sensor.illuminance)
+        self.log.add_data(secs, nsecs, self.pose.position,
+                          self.sensor.illuminance)
 
         # publish the sensor msg
         self.pub.publish(self.sensor)
 
 
 def main_loop():
-    sources = Sources([[5, 2, 2], [7.5, 7.5, 2]])
+    sources = Sources([[2, 2, -2]])
+    print("Setup sub")
     sub = Sub(sources)
+    print("Sources ready")
     rate = rospy.Rate(1)
     while not rospy.is_shutdown():
         # sensor.illuminance += 0.1
