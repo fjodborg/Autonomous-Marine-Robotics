@@ -163,12 +163,12 @@ if __name__ == "__main__":
     rospy.init_node('our_path_planner', anonymous=True)
 
     ng = 6  # Points in the global plan
-    nl = 6  # Points in the local plan
-    MD = missionDesigner(northg=2.0, eastg=1.0, ng=ng, northl=1,
-                         eastl=1.0, nl=nl, northg0=2.0, eastg0=-0.5)
+    nl = 4  # Points in the local plan
+    MD = missionDesigner(northg=2.0, eastg=1.0, ng=ng, northl=0.5,
+                         eastl=0.5, nl=nl, northg0=2.0, eastg0=-0.5)
     wg, wl = MD.return_waypoints()
     pp = pathPlanner(meas_thres=0.1, wg=wg, wl=wl, circ_acc=1.0,
-                     circ_acc_l=0.2, ng=ng, nl=nl)
+                     circ_acc_l=0.8, ng=ng, nl=nl)
 
     Sub = Subscriber(pp)
 
