@@ -94,7 +94,7 @@ class Subscriber():
         self.PP = pathPlanner  # Access to pp class
 
         self.pose = None
-        self.simulation_flag = False  # are we in a simulation?
+        self.simulation_flag = True  # are we in a simulation?
         self.max_speed = 0.1  # Unit unknown, used twice in the same message
         self.interpolator = ''  # Effect unknown
         self.WP = Waypoint()

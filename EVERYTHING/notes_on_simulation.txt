@@ -1,0 +1,7 @@
+roslaunch bluerov2_bringup bringup_neptus_gazebo.launch
+
+% Change to your path
+source ~/Autonomous-Marine-Robotics/catkin_ws/devel/setup.bash
+
+rosbag record 
+% plavering, målinger waypoints, 

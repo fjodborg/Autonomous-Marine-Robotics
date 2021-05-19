@@ -115,7 +115,7 @@ class Sub():
     def __init__(self, sources):
         self.sources = sources  # gain access to source class
         self.log = Log()
-        self.simulation_flag = False
+        self.simulation_flag = True
         self.listener()
         self.pose = None
 
