@@ -1,7 +1,38 @@
+
+% Start the simulation in a new terminal
+% 1
 roslaunch bluerov2_bringup bringup_neptus_gazebo.launch
 
-% Change to your path
-source ~/Autonomous-Marine-Robotics/catkin_ws/devel/setup.bash
+% Optional: Start gazebo and rviz
+% 1.1
+gazebo
+rosrun rviz rviz
 
-rosbag record 
-% plavering, målinger waypoints, 
+% Change to your path in two terminals
+% 2
+source ~/Autonomous-Marine-Robotics/catkin_ws/devel/setup.bash
+rosrun aur_planner sensor_data.py
+% 3
+source ~/Autonomous-Marine-Robotics/catkin_ws/devel/setup.bash
+rosrun aur_planner pathPlanner.py
+
+
+% Record what you want
+% 4
+rosbag record /bluerov2/pose_gt /bluerov2/our_sensor /bluerov2/waypoint_markers /bluerov2/dp_controller/waypoints
+% placering, målinger waypoints, 
+
+
+% Simulation 01 was done with source:
+% [10, 22, -1]
+% And paths:
+% MD = missionDesigner(northg=20.0, eastg=50.0, ng=24, northl=6, eastl=6.0, nl=10, northg0=0.0, eastg0=0.0)
+% pp = pathPlanner(meas_thres=0.1, wg=wg, wl=wl, circ_acc=0.3, circ_acc_l=0.3, ng=ng, nl=nl)
+% 20 by 50 global path, 24 points in it, start at [0,0]
+% 6 by 6 local path, 10 points in it.
+% Circle of acceptance: 0.3
+% Measurement threshold: 0.1
+
+% Simulation 02 was a repeat with 
+% Measurement threshold: 0.01
+

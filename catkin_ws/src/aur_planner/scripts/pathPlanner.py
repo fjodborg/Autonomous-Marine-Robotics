@@ -14,11 +14,12 @@ from std_msgs.msg import Time
 
 class pathPlanner():
 
-    def __init__(self, meas_thres, wg, wl, circ_acc, circ_acc_l, ng, nl):
+    def __init__(self, meas_thres, wg, wl, circ_acc, circ_acc_l, ng, nl, disable_local=False):
         self.meas_thres = meas_thres
         self.wg, self.wl = wg, wl
         self.circ_acc, self.circ_acc_l = circ_acc, circ_acc_l
         self.ng, self.nl = ng, nl
+        self.disable_local = disable_local
 
         # Init Output Waypoint
         self.Waypoint = wg[:, 0]
@@ -35,13 +36,16 @@ class pathPlanner():
         self.index_g, self.index_l, self.x_0, self.g_l_flag = 0, 0, 0.0, 0
         self.return_to_lstart_flag = False  # Anders and I do flags differently -A
 
+        # shitty disable workaround
+        if self.disable_local:
+            self.meas_thres = 99999999
+
     def stateMachine(self, pos, meas):
         self.updateVariables(pos)
         self.Waypoint = wg[:, self.index_g]
         print("Global index: %d, Local: %d, Local_flag %d, Return flag %d" %
               (self.index_g, self.index_l, self.g_l_flag, self.return_to_lstart_flag))
 
-        # TODO: Implement
         if (self.return_to_lstart_flag):
             circ = (self.return_to_lstart_waypoint[0]-pos[0])**2 + (
                 self.return_to_lstart_waypoint[1]-pos[1])**2
@@ -95,7 +99,10 @@ class Subscriber():
 
         self.pose = None
         self.simulation_flag = True  # are we in a simulation?
-        self.max_speed = 0.1  # Unit unknown, used twice in the same message
+        if self.simulation_flag:
+            self.max_speed = 5  # Unit unknown, used twice in the same message
+        else:
+            self.max_speed = 0.1
         self.interpolator = ''  # Effect unknown
         self.WP = Waypoint()
         self.WP.max_forward_speed = self.max_speed
@@ -145,7 +152,10 @@ class Subscriber():
         self.WP.point.x = WP_simple[0]
         self.WP.point.y = WP_simple[1]
         self.WP.point.z = -1.0
-        self.WP.header.frame_id = "waterlinked"
+        if self.simulation_flag:
+            self.WP.header.frame_id = "world"
+        else:
+            self.WP.header.frame_id = "waterlinked"
         self.WP.radius_of_acceptance = 0.2
 
         srv_return = False
@@ -162,13 +172,14 @@ if __name__ == "__main__":
 
     rospy.init_node('our_path_planner', anonymous=True)
 
-    ng = 6  # Points in the global plan
-    nl = 4  # Points in the local plan
-    MD = missionDesigner(northg=2.0, eastg=1.0, ng=ng, northl=0.5,
-                         eastl=0.5, nl=nl, northg0=2.0, eastg0=-0.5)
+    ng = 24  # Points in the global plan
+    nl = 10  # Points in the local plan
+    dis_local = False  # Disable local plan (not a good implementation)
+    MD = missionDesigner(northg=20.0, eastg=50.0, ng=ng, northl=6,
+                         eastl=6.0, nl=nl, northg0=0.0, eastg0=0.0)
     wg, wl = MD.return_waypoints()
-    pp = pathPlanner(meas_thres=0.1, wg=wg, wl=wl, circ_acc=1.0,
-                     circ_acc_l=0.8, ng=ng, nl=nl)
+    pp = pathPlanner(meas_thres=0.01, wg=wg, wl=wl, circ_acc=0.3,
+                     circ_acc_l=0.3, ng=ng, nl=nl, disable_local=dis_local)
 
     Sub = Subscriber(pp)
 
