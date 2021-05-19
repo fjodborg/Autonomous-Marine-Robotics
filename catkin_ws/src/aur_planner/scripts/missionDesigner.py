@@ -1,11 +1,9 @@
-"""
-Mission designer
+#!/usr/bin/env python
 
-"""
-
-
+#Mission designer
 import numpy as np
 import matplotlib.pyplot as plt
+
 
 class missionDesigner():
 
