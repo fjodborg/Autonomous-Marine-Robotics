@@ -92,6 +92,8 @@ if __name__ == "__main__":
     plt.ylabel(r"Intensity \bigg[$\displaystyle\frac{1}{m^2}$\bigg]")
     plt.xlim([0, 450])
     plt.ylim([0.001, 10])
+    plt.xlabel("Samples")
+    
     ax3 =  fig.add_subplot(3,1,2)
     plt.plot(onetothree04, meas04)
     plt.plot(onetothree04, meas04_thresh ,"--")
@@ -112,7 +114,6 @@ if __name__ == "__main__":
     ax3.legend([r"Measured data",r"Threshold"])
     ax3.grid(which="major", linestyle='--')
     
-    plt.xlabel("Samples")
     #plt.ylabel("Samples")
     plt.tight_layout()
 
