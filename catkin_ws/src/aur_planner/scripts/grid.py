@@ -98,14 +98,20 @@ def contMap(x, y, z,x2,y2,z2, gridsize,smooth, thres, sat_limit, sources):
 
 
     fig = plt.figure()
+    plt.rcParams.update({
+        "text.usetex": True,
+        "font.family": "serif",
+        "font.serif": ["Palatino"],
+    })
     ax = fig.add_subplot(1, 2, 1)
     #Add the vmin and vmax arguments to set the color scale
     ax.imshow(data,cmap = clmap, extent=[min(X),max(X),min(Y),max(Y)],
                    origin="lower", interpolation='bilinear', vmin = _min, vmax = _max)
+    plt.tight_layout()
     plt.scatter(x,y,s = 1, color = 'r')
     plt.scatter(sources[0],sources[1],s = 200, color = 'k', marker = "+")
-    plt.xlabel("East (m)")
-    plt.ylabel("North (m)")
+    plt.xlabel("East [m]")
+    plt.ylabel("North [m]")
     ax.autoscale(False)
     ax.set_xlim([min(X), max(X)])
     ax.set_ylim([min(Y), max(Y)])
@@ -114,18 +120,21 @@ def contMap(x, y, z,x2,y2,z2, gridsize,smooth, thres, sat_limit, sources):
     #Add the vmin and vmax arguments to set the color scale
     ax2.imshow(data2,cmap = clmap, extent=[min(X),max(X),min(Y),max(Y)],
                    origin="lower", interpolation='bilinear', vmin = _min, vmax = _max)
+    plt.tight_layout()
     plt.scatter(x2,y2,s = 1, color = 'r')
     plt.scatter(sources[0],sources[1],s = 200, color = 'k', marker = "+")
     ax2.autoscale(False)
     norm = mpl.colors.Normalize(vmin=_min, vmax=_max)
     sm = plt.cm.ScalarMappable(norm=norm, cmap = clmap)
-    cbar = plt.colorbar(sm).ax.set_ylabel("Intensity ", rotation=270, labelpad=15)
+    cbar = plt.colorbar(sm).ax.set_ylabel(r"Intensity \bigg[$\displaystyle\frac{W}{m^2}$\bigg]", rotation=270, labelpad=30)
     plt.xlabel("East [m]")
     plt.ylabel("North [m]")
     ax2.set_xlim([min(X), max(X)])
     ax2.set_ylim([min(Y), max(Y)])
-    fig.savefig('sim_map.eps',format="eps")
-    plt.show()
+    plt.tight_layout()
+    fig.tight_layout()
+    fig.savefig('sim_map.png',format="png", bbox_inches='tight')
+    # plt.show()
     
 
 def is_float(element):
@@ -137,7 +146,7 @@ def is_float(element):
 
 def main():
     
-    f = open('poses-simulation05.txt',"r")
+    f = open('../../../../EVERYTHING/scripts/poses-simulation05.txt',"r")
  
     data = ([[float(elem) for elem in row.split(",") if is_float(elem)] for row in f.read().split("\n") ])
 
@@ -146,7 +155,7 @@ def main():
     meas = data2[:,1]
     x = data2[:,2]
     y = data2[:,3]
-    f = open('poses-simulation07.txt',"r")
+    f = open('../../../../EVERYTHING/scripts/poses-simulation07.txt',"r")
     data = ([[float(elem) for elem in row.split(",") if is_float(elem)] for row in f.read().split("\n") ])
     data2 = np.array(data[1:-1])
     
