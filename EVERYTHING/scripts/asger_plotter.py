@@ -119,5 +119,5 @@ if __name__ == "__main__":
     fig.tight_layout()
 
     #fig.savefig("asger_plot.eps", format="eps", transparent=True)
-    fig.savefig("asger_plot.png", format="png", transparent=True)
+    fig.savefig("asger_plot.png", format="png", transparent=True, dpi=300)
     plt.show()

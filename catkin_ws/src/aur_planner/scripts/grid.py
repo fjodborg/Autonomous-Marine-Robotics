@@ -133,7 +133,7 @@ def contMap(x, y, z,x2,y2,z2, gridsize,smooth, thres, sat_limit, sources):
     ax2.set_ylim([min(Y), max(Y)])
     plt.tight_layout()
     fig.tight_layout()
-    fig.savefig('sim_map.png',format="png", bbox_inches='tight', transparent=True)
+    fig.savefig('sim_map.png',format="png", bbox_inches='tight', transparent=True, dpi=300)
     # plt.show()
     
 
