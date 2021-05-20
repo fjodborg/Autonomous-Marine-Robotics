@@ -93,7 +93,7 @@ if __name__ == "__main__":
     plt.xlim([0, 450])
     plt.ylim([0.001, 10])
     plt.xlabel("Samples")
-    
+
     ax3 =  fig.add_subplot(3,1,2)
     plt.plot(onetothree04, meas04)
     plt.plot(onetothree04, meas04_thresh ,"--")
@@ -117,5 +117,5 @@ if __name__ == "__main__":
     #plt.ylabel("Samples")
     plt.tight_layout()
 
-    fig.savefig("asger_plot.png")
+    fig.savefig("asger_plot.eps", format="eps")
     plt.show()
