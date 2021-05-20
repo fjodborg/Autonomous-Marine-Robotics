@@ -58,8 +58,41 @@ if __name__ == "__main__":
     #y = [1,2,3,3,1,2,5]
     #meas = [1,2,1,3,2,5,3]
 
+    threshold = 0.01
+    meas03_thresh = [meas if meas > threshold else threshold for meas in meas03] 
+    meas02_thresh = [meas if meas > threshold else threshold for meas in meas02] 
+
+    plt.rcParams.update({
+        "text.usetex": True,
+        "font.family": "serif",
+        "font.serif": ["Palatino"],
+    })
+
+
     fig = plt.figure()
-    plt.plot(onetothree02, meas02)
-    fig = plt.figure()
+    ax1 =  fig.add_subplot(2,1,1)
     plt.plot(onetothree03, meas03)
+    plt.plot(onetothree03, meas03_thresh ,"--")
+    plt.ylabel(r"Intensity \bigg[$\displaystyle\frac{1}{m^2}$\bigg]")
+    plt.xlim([0, 450])
+    plt.ylim([0.001, 10])
+    ax2 =  fig.add_subplot(2,1,2)
+    plt.plot(onetothree02, meas02)
+    plt.plot(onetothree02, meas02_thresh ,"--")
+    plt.ylabel(r"Intensity \bigg[$\displaystyle\frac{1}{m^2}$\bigg]")
+    plt.xlim([0, 450])
+    plt.ylim([0.001, 10])
+
+
+    ax1.set_yscale('log')
+    ax2.set_yscale('log')
+    ax1.legend([r"Measured data",r"Threshold"])
+    ax2.legend([r"Measured data",r"Threshold"])
+    ax1.grid(which="major", linestyle='--')
+    ax2.grid(which="major", linestyle='--')
+    plt.xlabel("Samples")
+    #plt.ylabel("Samples")
+    plt.tight_layout()
+
+    fig.savefig("asger_plot.png")
     plt.show()
