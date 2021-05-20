@@ -36,3 +36,15 @@ rosbag record /bluerov2/pose_gt /bluerov2/our_sensor /bluerov2/waypoint_markers 
 % Simulation 02 was a repeat with 
 % Measurement threshold: 0.01
 
+% Simulation 03 was made without locals?
+
+% Simulation 04 was made without locals and
+% 20 by 50 global path, 48 points in it, start at [0,0]
+
+% Simulation 05 was made without locals and
+% 20 by 50 global path, 48 points in it, start at [0,0]
+% sources = Sources([[10, 15, -1], [10, 20, -1], [10, 22, -1], [12.5, 20, -1], [12.5, 25, -1], [2, 40, -1]])
+
+% Simulation 05 was adaptive with:
+% 20 by 50 global path, 24 points in it, start at [0,0]
+% sources = Sources([[10, 15, -1], [10, 20, -1], [10, 22, -1], [12.5, 20, -1], [12.5, 25, -1], [2, 40, -1]])

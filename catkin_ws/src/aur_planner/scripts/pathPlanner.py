@@ -100,13 +100,13 @@ class Subscriber():
         self.pose = None
         self.simulation_flag = True  # are we in a simulation?
         if self.simulation_flag:
-            self.max_speed = 5  # Unit unknown, used twice in the same message
+            self.max_speed = 0.5  # Unit unknown, used twice in the same message
         else:
             self.max_speed = 0.1
         self.interpolator = ''  # Effect unknown
         self.WP = Waypoint()
         self.WP.max_forward_speed = self.max_speed
-        self.WP.radius_of_acceptance = 0.5  # [m]
+        self.WP.radius_of_acceptance = 50  # [m]
         self.oldWP = None
 
         # rospy.wait_for_service('/bluerov2/go_to')

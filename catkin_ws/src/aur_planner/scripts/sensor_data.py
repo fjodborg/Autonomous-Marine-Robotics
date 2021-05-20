@@ -164,7 +164,9 @@ class Sub():
 
 
 def main_loop():
-    sources = Sources([[10, 22, -1]])
+    #sources = Sources([[10, 22, -1]])
+    sources = Sources([[10, 15, -1], [10, 20, -1], [10, 22, -1],
+                      [12.5, 20, -1], [12.5, 25, -1], [2, 40, -1]])
     print("Setup sub")
     sub = Sub(sources)
     print("Sources ready")
