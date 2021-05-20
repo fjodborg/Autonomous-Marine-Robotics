@@ -172,13 +172,13 @@ if __name__ == "__main__":
 
     rospy.init_node('our_path_planner', anonymous=True)
 
-    ng = 48  # Points in the global plan
+    ng = 24  # Points in the global plan
     nl = 10  # Points in the local plan
-    dis_local = True  # Disable local plan (not a good implementation)
+    dis_local = False  # Disable local plan (not a good implementation)
     MD = missionDesigner(northg=20.0, eastg=50.0, ng=ng, northl=6,
                          eastl=6.0, nl=nl, northg0=0.0, eastg0=0.0)
     wg, wl = MD.return_waypoints()
-    pp = pathPlanner(meas_thres=0.01, wg=wg, wl=wl, circ_acc=0.3,
+    pp = pathPlanner(meas_thres=0.09, wg=wg, wl=wl, circ_acc=0.3,
                      circ_acc_l=0.3, ng=ng, nl=nl, disable_local=dis_local)
 
     Sub = Subscriber(pp)
